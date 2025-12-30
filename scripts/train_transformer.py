@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 import torch
 import numpy as np
 
@@ -31,18 +32,32 @@ DATA_PATHS = {
 }
 
 
-seed_list = [0,1,2,3]
+seed_list = [1,2,3]
 
-SERVER = 'obi'  # Change to 'leia' if needed
-DATA_PATH_KEY = f"{SERVER}_log"  # Change to e.g., "leia_log_held_out" if needed
+# SERVER = 'obi'  # Change to 'leia' if needed
+# DATA_PATH_KEY = f"{SERVER}_log"  # Change to e.g., "leia_log_held_out" if needed
 model_name_base = "time_masked_transformer_short_ablation_no_time_masking"
-
+base_dir = "/home/behemoth/research/transformers_with_dietcorp"
+dataset = "card"
+if dataset == "card":
+    dataset_path ="/home/behemoth/research/transformers_with_dietcorp/processed_data/card_data"
+    neuro_dim = 512
+    patch_size = (5, 512)
+    dim = 786
+    lrStart = 0.0006
+    lrEnd = 0.00001
+else:
+    dataset_path = "/home/behemoth/research/transformers_with_dietcorp/processed_data/data"
+    neuro_dim = 256
+    patch_size = (5, 256)
+    dim = 384
+    lrStart = 0.001
+    lrEnd = 0.001
 # === MAIN LOOP ===
 for seed in seed_list:
     
     model_name = f"{model_name_base}_seed_{seed}"
-    output_dir = os.path.join(BASE_PATHS[SERVER], 'outputs', model_name)
-    dataset_path = DATA_PATHS[DATA_PATH_KEY]
+    output_dir = os.path.join(base_dir, 'outputs', model_name)
     
     # Create config dictionary
     args = {
@@ -52,8 +67,9 @@ for seed in seed_list:
         'modelName': model_name,
         'maxDay': None,
         'restricted_days': [],
-        'patch_size': (5, 256),
-        'dim': 384,
+        'patch_size': patch_size,
+        "nInputFeatures": neuro_dim,
+        'dim': dim,
         'depth': 5,
         'heads': 6,
         'mlp_dim_ratio': 4,
@@ -69,8 +85,8 @@ for seed in seed_list:
         'dropout': 0.35,
         'AdamW': True,
         'learning_scheduler': 'multistep',
-        'lrStart': 0.001,
-        'lrEnd': 0.001,
+        'lrStart': lrStart,
+        'lrEnd': lrEnd,
         'batchSize': 64,
         'beta1': 0.90,
         'beta2': 0.999,
@@ -78,7 +94,7 @@ for seed in seed_list:
         'milestones': [150],
         'gamma': 0.1,
         'extra_notes': "",
-        'device': 'cuda:2',
+        'device': 'cuda:0',
         'load_pretrained_model': "",
         'wandb_id': "",
         'start_epoch': 0,
@@ -88,7 +104,7 @@ for seed in seed_list:
         'max_mask_channels' : 0, # maximum number of channels to mask per mask
         'max_mask_pct' : 0, 
         'num_masks' : 0,
-        'dist_dict_path': '/home3/skaasyap/willett/outputs/dist_dict.pt', 
+        'dist_dict_path': Path(output_dir) / dataset / 'dist_dict.pt', 
         'consistency': False, 
         'consistency_scalar': 0.2
     }
@@ -125,6 +141,8 @@ for seed in seed_list:
         dist_dict_path=args['dist_dict_path'], 
         consistency = args['consistency']
     ).to(args['device'])
+    
+    print(f"Model instantiated with {sum(p.numel() for p in model.parameters() if p.requires_grad)} trainable parameters.")
 
     # Load pretrained model if specified
     if args['load_pretrained_model']:
