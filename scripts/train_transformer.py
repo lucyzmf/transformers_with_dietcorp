@@ -38,7 +38,7 @@ seed_list = [1,]
 
 # SERVER = 'obi'  # Change to 'leia' if needed
 # DATA_PATH_KEY = f"{SERVER}_log"  # Change to e.g., "leia_log_held_out" if needed
-model_name_base = "time_masked_small"
+model_name_base = "time_masked_large"
 base_dir = f"/home/{user}/research/transformers_with_dietcorp"
 dataset = "card"
 if dataset == "card":
