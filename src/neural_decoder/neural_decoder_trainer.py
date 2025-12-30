@@ -171,12 +171,18 @@ def trainModel(args, model):
                     
                 else:
                     
-                    loss = forward_ctc(pred, adjustedLens, y, y_len)
+                    # loss = forward_ctc(pred, adjustedLens, y, y_len)
+                    pred = pred.log_softmax(2)
+                    pred = pred.permute(1, 0, 2)  # (T, N, C)
+                    loss = loss_ctc(pred, y, adjustedLens, y_len)
                 
             train_loss.append(loss.cpu().detach().numpy())
             
             optimizer.zero_grad()
             loss.backward()
+            
+            # check grad norm 
+            torch.nn.utils.clip_grad_norm_(model.parameters(), 1.)
             optimizer.step()            
     
         with torch.no_grad():
@@ -228,8 +234,12 @@ def trainModel(args, model):
                     
                 else:
                     pred = model.forward(X, X_len, testDayIdx)            # <-- fixed dayIdx -> testDayIdx
-                    loss = forward_ctc(pred, adjustedLens, y, y_len)
+                    # loss = forward_ctc(pred, adjustedLens, y, y_len)
+                    pred = pred.log_softmax(2)
+                    pred = pred.permute(1, 0, 2)  # (T, N, C)
+                    loss = loss_ctc(pred, y, adjustedLens, y_len)
                     allLoss.append(loss.item())                                # <-- simpler & safe
+                    pred = pred.permute(1, 0, 2)  # back to (N, T, C) for decoding
 
                 for iterIdx in range(pred.shape[0]):
                     # no need to wrap with torch.tensor(...)
