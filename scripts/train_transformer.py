@@ -1,4 +1,6 @@
 import os
+import getpass
+user = getpass.getuser()
 from pathlib import Path
 import torch
 import numpy as np
@@ -32,27 +34,28 @@ DATA_PATHS = {
 }
 
 
-seed_list = [1,2,3]
+seed_list = [1,]
 
 # SERVER = 'obi'  # Change to 'leia' if needed
 # DATA_PATH_KEY = f"{SERVER}_log"  # Change to e.g., "leia_log_held_out" if needed
-model_name_base = "time_masked_transformer_short_ablation_no_time_masking"
-base_dir = "/home/behemoth/research/transformers_with_dietcorp"
+model_name_base = "time_masked_small"
+base_dir = f"/home/{user}/research/transformers_with_dietcorp"
 dataset = "card"
 if dataset == "card":
-    dataset_path ="/home/behemoth/research/transformers_with_dietcorp/processed_data/card_data"
+    dataset_path =f"/home/{user}/research/transformers_with_dietcorp/processed_data/card_data"
     neuro_dim = 512
     patch_size = (5, 512)
     dim = 786
     lrStart = 0.0006
     lrEnd = 0.00001
 else:
-    dataset_path = "/home/behemoth/research/transformers_with_dietcorp/processed_data/data"
+    dataset_path = f"/home/{user}/research/transformers_with_dietcorp/processed_data/data"
     neuro_dim = 256
     patch_size = (5, 256)
     dim = 384
     lrStart = 0.001
     lrEnd = 0.001
+    depth = 5
 # === MAIN LOOP ===
 for seed in seed_list:
     
@@ -70,7 +73,7 @@ for seed in seed_list:
         'patch_size': patch_size,
         "nInputFeatures": neuro_dim,
         'dim': dim,
-        'depth': 5,
+        'depth': depth,
         'heads': 6,
         'mlp_dim_ratio': 4,
         'dim_head': 64,
@@ -94,7 +97,7 @@ for seed in seed_list:
         'milestones': [150],
         'gamma': 0.1,
         'extra_notes': "",
-        'device': 'cuda:0',
+        'device': 'cuda:1',
         'load_pretrained_model': "",
         'wandb_id': "",
         'start_epoch': 0,
@@ -142,7 +145,6 @@ for seed in seed_list:
         consistency = args['consistency']
     ).to(args['device'])
     
-    print(f"Model instantiated with {sum(p.numel() for p in model.parameters() if p.requires_grad)} trainable parameters.")
 
     # Load pretrained model if specified
     if args['load_pretrained_model']:
