@@ -24,7 +24,7 @@ def trainModel(args, model):
                    resume="must", id=args["wandb_id"])
     else:
         wandb.init(project="Neural Decoder", 
-                   entity="skaasyap-ucla", config=dict(args), name=args['modelName'])
+                   entity="lucyzmf", config=dict(args), name=args['modelName'])
         
     
     os.makedirs(args["outputDir"], exist_ok=True)
@@ -44,6 +44,9 @@ def trainModel(args, model):
     
     # Watch the model
     wandb.watch(model, log="all")  # Logs gradients, parameters, and gradients histograms
+    
+    param_count = sum(p.numel() for p in model.parameters() if p.requires_grad)
+    wandb.log({"Parameter Count": param_count})
 
     loss_ctc = torch.nn.CTCLoss(blank=0, reduction="mean", zero_infinity=True)
     
