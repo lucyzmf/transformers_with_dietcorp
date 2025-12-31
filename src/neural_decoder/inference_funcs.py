@@ -1,13 +1,13 @@
 import torch
 import pickle
 import os
-from bit import BiT_Phoneme
-from model import GRUDecoder
+from .bit import BiT_Phoneme
+from .model import GRUDecoder
 import re
 import numpy as np
 import torch
 from typing import Dict, Any, List, Tuple
-from dataset import SpeechDataset  # adjust if your path differs
+from .dataset import SpeechDataset  # adjust if your path differs
 from edit_distance import SequenceMatcher
 
 def evaluate_model(
@@ -142,9 +142,9 @@ def evaluate_model(
                     day_len2    += len(true_seq2)
 
             # normalized transcript (for display/logging)
-            t = one_day["transcriptions"][j].strip()
-            t = re.sub(r"[^a-zA-Z\- \']", "", t).replace("--", "").lower()
-            outputs["transcriptions"].append(t)
+            # t = one_day["transcriptions"][j].strip()
+            # t = re.sub(r"[^a-zA-Z\- \']", "", t).replace("--", "").lower()
+            # outputs["transcriptions"].append(t)
 
         if day_len > 0:
             day_cer = day_edit / day_len
@@ -270,7 +270,8 @@ def load_bit_phoneme_model(folder: str, device: torch.device = torch.device("cud
         mask_token_zeros=args['mask_token_zero'],
         num_masks_channels=0,
         max_mask_channels=0,
-        dist_dict_path=0
+        dist_dict_path=0, 
+        consistency=False
     ).to(device)
 
     # Load weights

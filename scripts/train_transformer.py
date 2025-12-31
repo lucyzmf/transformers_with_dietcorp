@@ -45,7 +45,8 @@ if dataset == "card":
     dataset_path =f"/home/{user}/research/transformers_with_dietcorp/processed_data/card_data"
     neuro_dim = 512
     patch_size = (5, 512)
-    dim = 786
+    dim = 768
+    depth = 5
     lrStart = 0.0006
     lrEnd = 0.00001
 else:
@@ -97,7 +98,7 @@ for seed in seed_list:
         'milestones': [150],
         'gamma': 0.1,
         'extra_notes': "",
-        'device': 'cuda:1',
+        'device': 'cuda:0',
         'load_pretrained_model': "",
         'wandb_id': "",
         'start_epoch': 0,

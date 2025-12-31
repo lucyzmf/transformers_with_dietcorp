@@ -79,6 +79,7 @@ instance/
 docs/_build/
 processed_data/
 wandb/
+outputs/
 
 # PyBuilder
 .pybuilder/
